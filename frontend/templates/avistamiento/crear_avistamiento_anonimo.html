@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Reportar Avistamiento Anónimo - Patitas a casa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&amp;display=swap" rel="stylesheet"/>
+  <!-- Bootstrap CSS para el modal -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-roboto">
+  {% if messages %}
+  <div class="fixed top-0 left-0 right-0 z-50">
+    {% for message in messages %}
+    <div class="p-4 {{ message.tags }} bg-{{ message.tags }}-100 border-l-4 border-{{ message.tags }}-500 text-{{ message.tags }}-700">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  
+  <nav class="bg-indigo-900 p-4 flex justify-between items-center">
+    <div class="flex items-center">
+      <img alt="Logo of a dog" class="rounded-full" height="40" src="https://drive.google.com/file/d/1HkxirLpGyEtcpanRKWpOh1tBUTSqP5NO/view?usp=drive_link" width="40"/>
+      <span class="text-white text-xl font-bold ml-2">Patitas a casa</span>
+    </div>
+    <div class="flex space-x-4">
+      <a class="text-white px-3 py-2 rounded-md text-sm font-medium" href="{% url 'home' %}">Principal</a>
+      <a class="text-white px-3 py-2 rounded-md text-sm font-medium" href="#">About</a>
+      <a class="text-white px-3 py-2 rounded-md text-sm font-medium" href="#">Adoptar</a>
+      <a class="text-white px-3 py-2 rounded-md text-sm font-medium bg-indigo-700" href="{% url 'avistamiento_router' %}">Reportar</a>
+      {% if user.is_authenticated %}
+      <a class="text-white px-3 py-2 rounded-md text-sm font-medium" href="#">
+        <i class="fas fa-user"></i> {{ user.username }}
+      </a>
+      {% else %}
+      <a class="text-white px-3 py-2 rounded-md text-sm font-medium" href="#">
+        <i class="fas fa-user"></i> Iniciar sesión
+      </a>
+      {% endif %}
+    </div>
+  </nav>
+  
+  <div class="container mx-auto py-8 px-4">
+    <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+      <h1 class="text-2xl font-bold text-indigo-800 mb-6">Reportar avistamiento de perro</h1>
+      
+      <form method="post" enctype="multipart/form-data" id="avistamientoForm">
+        {% csrf_token %}
+          <div class="mb-4">
+            <label for="entidad_federativa" class="block text-gray-700 font-medium mb-2">
+              Entidad Federativa (Estado) *
+            </label>
+            <select id="entidad_federativa" name="entidad_federativa" class="w-full p-2 border border-gray-300 rounded-md" required>
+              <option value="" disabled selected>Selecciona un estado</option>
+              <option value="CDMX">Ciudad de México</option>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label for="alcaldia" class="block text-gray-700 font-medium mb-2">
+              Alcaldía/Municipio *
+            </label>
+            <select id="municipio_alcaldia" name="municipio_alcaldia" class="w-full p-2 border border-gray-300 rounded-md" required>
+              <option value="" disabled selected>Selecciona una alcaldía</option>
+              <option value="Álvaro Obregón">Álvaro Obregón</option>
+              <option value="Azcapotzalco">Azcapotzalco</option>
+              <option value="Benito Juárez">Benito Juárez</option>
+              <option value="Cuauhtémoc">Cuauhtémoc</option>
+              <option value="Coyoacán">Coyoacán</option>
+              <option value="Gustavo A. Madero">Gustavo A. Madero</option>
+              <option value="Iztacalco">Iztacalco</option>
+              <option value="Iztapalapa">Iztapalapa</option>
+              <option value="La Magdalena Contreras">La Magdalena Contreras</option>
+              <option value="Milpa Alta">Milpa Alta</option>
+              <option value="Miguel Hidalgo">Miguel Hidalgo</option>
+              <option value="Tláhuac">Tláhuac</option>
+              <option value="Tlalpan">Tlalpan</option>
+              <option value="Venustiano Carranza">Venustiano Carranza</option>
+              <option value="Xochimilco">Xochimilco</option>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label for="codigo_postal" class="block text-gray-700 font-medium mb-2">
+              Código Postal *
+            </label>
+            <input type="text" id="codigo_postal" name="codigo_postal" maxlength="5" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Ejemplo: 12345" required/>
+          </div>
+          
+          <div class="mb-4">
+            <label for="colonia" class="block text-gray-700 font-medium mb-2">
+              Colonia *
+            </label>
+            <input type="text" id="colonia" name="colonia" maxlength="80" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Nombre de la colonia" required/>
+          </div>
+
+          <div class="mb-4">
+            <label for="calle" class="block text-gray-700 font-medium mb-2">
+              Calle *
+            </label>
+            <input type="text" id="calle" name="calle" maxlength="80" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Nombre de la calle" required/>
+          </div>
+
+          <div class="mb-4">
+            <label for="numero_exterior" class="block text-gray-700 font-medium mb-2">
+              Número Exterior *
+            </label>
+            <input type="number" id="numero_exterior" name="numero_exterior" maxlength="5" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Número exterior" required/>
+          </div>
+          <div class="mb-4">
+            <label for="fecha_hora_avistamiento" class="block text-gray-700 font-medium mb-2">
+                Fecha y hora del avistamiento *
+            </label>
+            <input type="datetime-local" id="fecha_hora_avistamiento" name="fecha_hora_avistamiento" 
+                   class="w-full p-2 border border-gray-300 rounded-md" required>
+        </div>
+          <div class="mb-4">
+            <label for="foto" class="block text-gray-700 font-medium mb-2">
+              Foto(s) *
+            </label>
+            <input type="file" id="foto" name="foto" accept="image/*" class="w-full p-2 border border-gray-300 rounded-md" required>
+          </div>
+
+          <div class="mb-4">
+            <label for="raza" class="block text-gray-700 font-medium mb-2">
+              Raza *
+            </label>
+            <select id="raza" name="raza" class="w-full p-2 border border-gray-300 rounded-md" required>
+              <option value="" disabled selected>Selecciona una raza</option>
+              <option value="Afghan Hound">Afghan Hound</option>
+              <option value="Akita">Akita</option>
+              <option value="Akita Inu">Akita Inu</option>
+              <option value="Alaskan Klee Kai">Alaskan Klee Kai</option>
+              <option value="Alaskan Malamute">Alaskan Malamute</option>
+              <option value="American Bulldog">American Bulldog</option>
+              <option value="American Pit Bull Terrier">American Pit Bull Terrier</option>
+              <option value="Australian Cattle Dog">Australian Cattle Dog</option>
+              <option value="Australian Shepherd">Australian Shepherd</option>
+              <option value="Australian Terrier">Australian Terrier</option>
+              <option value="Basset Hound">Basset Hound</option>
+              <option value="Basenji">Basenji</option>
+              <option value="Beagle">Beagle</option>
+              <option value="Bearded Collie">Bearded Collie</option>
+              <option value="Belgian Malinois">Belgian Malinois</option>
+              <option value="Bichon Frisé">Bichon Frisé</option>
+              <option value="Border Collie">Border Collie</option>
+              <option value="Border Terrier">Border Terrier</option>
+              <option value="Boston Terrier">Boston Terrier</option>
+              <option value="Boxer">Boxer</option>
+              <option value="Bull Terrier">Bull Terrier</option>
+              <option value="Bullmastiff">Bullmastiff</option>
+              <option value="Cairn Terrier">Cairn Terrier</option>
+              <option value="Cardigan Welsh Corgi">Cardigan Welsh Corgi</option>
+              <option value="Chihuahua">Chihuahua</option>
+              <option value="Cocker Spaniel">Cocker Spaniel</option>
+              <option value="Cocker Spaniel Inglés">Cocker Spaniel Inglés</option>
+              <option value="Collie">Collie</option>
+              <option value="Dalmatian">Dalmatian</option>
+              <option value="Dachshund (Teckel)">Dachshund (Teckel)</option>
+              <option value="Doberman Pinscher">Doberman Pinscher</option>
+              <option value="Dogo Argentino">Dogo Argentino</option>
+              <option value="English Bulldog">English Bulldog</option>
+              <option value="English Cocker Spaniel">English Cocker Spaniel</option>
+              <option value="English Setter">English Setter</option>
+              <option value="Finnish Lapphund">Finnish Lapphund</option>
+              <option value="Flat-Coated Retriever">Flat-Coated Retriever</option>
+              <option value="Fox Terrier">Fox Terrier</option>
+              <option value="French Bulldog">French Bulldog</option>
+              <option value="German Pointer">German Pointer</option>
+              <option value="German Shepherd Dog">German Shepherd Dog</option>
+              <option value="Giant Schnauzer">Giant Schnauzer</option>
+              <option value="Golden Retriever">Golden Retriever</option>
+              <option value="Gran Danés">Gran Danés</option>
+              <option value="Greyhound">Greyhound</option>
+              <option value="Havanese">Havanese</option>
+              <option value="Irish Setter">Irish Setter</option>
+              <option value="Irish Water Spaniel">Irish Water Spaniel</option>
+              <option value="Italian Greyhound">Italian Greyhound</option>
+              <option value="Jack Russell Terrier">Jack Russell Terrier</option>
+              <option value="Keeshond">Keeshond</option>
+              <option value="King Charles Spaniel">King Charles Spaniel</option>
+              <option value="Labrador Retriever">Labrador Retriever</option>
+              <option value="Lakeland Terrier">Lakeland Terrier</option>
+              <option value="Lhasa Apso">Lhasa Apso</option>
+              <option value="Maltés">Maltés</option>
+              <option value="Mastín Napolitano">Mastín Napolitano</option>
+              <option value="Mestizo">Mestizo</option>
+              <option value="Miniature Bull Terrier">Miniature Bull Terrier</option>
+              <option value="Miniature Schnauzer">Miniature Schnauzer</option>
+              <option value="Morkie">Morkie</option>
+              <option value="Newfoundland">Newfoundland</option>
+              <option value="Norfolk Terrier">Norfolk Terrier</option>
+              <option value="Norwegian Elkhound">Norwegian Elkhound</option>
+              <option value="Papillon">Papillon</option>
+              <option value="Parson Russell Terrier">Parson Russell Terrier</option>
+              <option value="Pequinés">Pequinés</option>
+              <option value="Pembroke Welsh Corgi">Pembroke Welsh Corgi</option>
+              <option value="Pit Bull Terrier">Pit Bull Terrier</option>
+              <option value="Plott Hound">Plott Hound</option>
+              <option value="Poodle (Caniche)">Poodle (Caniche)</option>
+              <option value="Pomeranian">Pomeranian</option>
+              <option value="Puli">Puli</option>
+              <option value="Pug">Pug</option>
+              <option value="Rottweiler">Rottweiler</option>
+              <option value="Saint Bernard">Saint Bernard</option>
+              <option value="Saluki">Saluki</option>
+              <option value="Samoyedo">Samoyedo</option>
+              <option value="Schipperke">Schipperke</option>
+              <option value="Scottish Terrier">Scottish Terrier</option>
+              <option value="Sealyham Terrier">Sealyham Terrier</option>
+              <option value="Shiba Inu">Shiba Inu</option>
+              <option value="Shih Tzu">Shih Tzu</option>
+              <option value="Schnauzer">Schnauzer</option>
+              <option value="Shetland Sheepdog">Shetland Sheepdog</option>
+              <option value="Silky Terrier">Silky Terrier</option>
+              <option value="Staffordshire Bull Terrier">Staffordshire Bull Terrier</option>
+              <option value="Sussex Spaniel">Sussex Spaniel</option>
+              <option value="Tibetan Mastiff">Tibetan Mastiff</option>
+              <option value="Tibetan Spaniel">Tibetan Spaniel</option>
+              <option value="Vizsla">Vizsla</option>
+              <option value="Weimaraner">Weimaraner</option>
+              <option value="West Highland White Terrier">West Highland White Terrier</option>
+              <option value="Whippet">Whippet</option>
+              <option value="Wirehaired Pointing Griffon">Wirehaired Pointing Griffon</option>
+              <option value="Yorkshire Terrier">Yorkshire Terrier</option>
+              <option value="Otra">Otra</option>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2">Sexo *</label>
+            <div class="flex space-x-4">
+              <label class="inline-flex items-center">
+                <input type="radio" name="sexo" value="M" class="form-radio" required>
+                <span class="ml-2">Macho</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input type="radio" name="sexo" value="H" class="form-radio">
+                <span class="ml-2">Hembra</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input type="radio" name="sexo" value="D" class="form-radio">
+                <span class="ml-2">Desconocido</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <label for="tamaño" class="block text-gray-700 font-medium mb-2">Tamaño *</label>
+            <select id="tamaño" name="tamaño" class="w-full p-2 border border-gray-300 rounded-md" required>
+              <option value="" disabled selected>Selecciona un tamaño</option>
+              <option value="P">Pequeño (menos de 10 kg)</option>
+              <option value="M">Mediano (10-25 kg)</option>
+              <option value="G">Grande (25-45 kg)</option>
+              <option value="Gi">Gigante (más de 45 kg)</option>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label for="estado_perro" class="block text-gray-700 font-medium mb-2">Estado del perro *</label>
+            <select id="estado_perro" name="estado_perro" class="w-full p-2 border border-gray-300 rounded-md" required>
+              <option value="" disabled selected>Selecciona un estado</option>
+              <option value="S">Saludable</option>
+              <option value="H">Herido</option>
+              <option value="E">Enfermo</option>
+              <option value="D">Desnutrido</option>
+              <option value="As">Asustado</option>
+              <option value="Ag">Agresivo</option>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label for="color_dominante" class="block text-gray-700 font-medium mb-2">
+              Color dominante *
+            </label>
+            <select id="color_dominante" name="color_dominante" class="w-full p-2 border border-gray-300 rounded-md" required>
+              <option value="" disabled selected>Selecciona el color dominante</option>
+              <option value="Blanco">Blanco</option>
+              <option value="Negro">Negro</option>
+              <option value="Café">Café</option>
+              <option value="Gris">Gris</option>
+              <option value="Dorado">Dorado</option>
+              <option value="Amarillo">Amarillo</option>
+              <option value="Atigrado">Atigrado</option>
+              <option value="Multicolor">Multicolor</option>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2">
+              Colores secundarios (opcional)
+            </label>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+              <div class="flex items-center">
+                <input type="checkbox" id="color_blanco" name="colores_secundarios" value="Blanco" class="mr-2"/>
+                <label for="color_blanco">Blanco</label>
+              </div>
+              <div class="flex items-center">
+                <input type="checkbox" id="color_negro" name="colores_secundarios" value="Negro" class="mr-2"/>
+                <label for="color_negro">Negro</label>
+              </div>
+              <div class="flex items-center">
+                <input type="checkbox" id="color_cafe" name="colores_secundarios" value="Café" class="mr-2"/>
+                <label for="color_cafe">Café</label>
+              </div>
+              <div class="flex items-center">
+                <input type="checkbox" id="color_gris" name="colores_secundarios" value="Gris" class="mr-2"/>
+                <label for="color_gris">Gris</label>
+              </div>
+              <div class="flex items-center">
+                <input type="checkbox" id="color_dorado" name="colores_secundarios" value="Dorado" class="mr-2"/>
+                <label for="color_dorado">Dorado</label>
+              </div>
+              <div class="flex items-center">
+                <input type="checkbox" id="color_amarillo" name="colores_secundarios" value="Amarillo" class="mr-2"/>
+                <label for="color_amarillo">Amarillo</label>
+              </div>
+              <div class="flex items-center">
+                <input type="checkbox" id="color_rojo" name="colores_secundarios" value="Rojo" class="mr-2"/>
+                <label for="color_rojo">Rojo</label>
+              </div>
+              <div class="flex items-center">
+                <input type="checkbox" id="color_crema" name="colores_secundarios" value="Crema" class="mr-2"/>
+                <label for="color_crema">Crema</label>
+              </div>
+              <div class="flex items-center">
+                <input type="checkbox" id="color_azul" name="colores_secundarios" value="Azul" class="mr-2"/>
+                <label for="color_azul">Azul</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="patron_pelo" class="block text-gray-700 font-medium mb-2">
+              Patrón de Pelo *
+            </label>
+            <select id="patron_pelo" name="patron_pelo" class="w-full p-2 border border-gray-300 rounded-md" required>
+              <option value="" disabled selected>Selecciona un patrón</option>
+              <option value="alambre">Alambre</option>
+              <option value="corto">Corto</option>
+              <option value="doble capa">Doble capa</option>
+              <option value="duro">Duro</option>
+              <option value="lanoso">Lanoso</option>
+              <option value="largo">Largo</option>
+              <option value="pelaje nuevo">Pelaje nuevo</option>
+              <option value="sin pelo">Sin pelo</option>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label for="identificador" class="block text-gray-700 font-medium mb-2">Identificador:</label>
+            <select id="identificador" name="identificador" class="w-full p-2 border border-gray-300 rounded-md" onchange="mostrarCampos()">
+              <option value="" disabled selected>Selecciona una opción</option>
+              <option value="collar">Collar</option>
+              <option value="chip">Chip</option>
+              <option value="ruac">RUAC</option>
+              <option value="no_tiene">No tiene</option>
+            </select>
+            
+            <div id="color_collar" style="display:none;" class="mt-2">
+              <label for="color_collar_select" class="block text-gray-700 font-medium mb-2">Color del Collar:</label>
+              <select id="color_collar_select" name="color_collar" class="w-full p-2 border border-gray-300 rounded-md">
+                <option value="" disabled selected>Selecciona un color</option>
+                <option value="rojo">Rojo</option>
+                <option value="naranja">Naranja</option>
+                <option value="amarillo">Amarillo</option>
+                <option value="verde">Verde</option>
+                <option value="azul">Azul</option>
+                <option value="indigo">Índigo</option>
+                <option value="violeta">Violeta</option>
+                <option value="rosa">Rosa</option>
+                <option value="negro">Negro</option>
+                <option value="blanco">Blanco</option>
+              </select>
+            </div>
+            
+            <div id="chip_ruac" style="display:none;" class="mt-2">
+              <label for="identificador_codigo" class="block text-gray-700 font-medium mb-2">Código del Chip/RUAC:</label>
+              <input type="text" id="identificador_codigo" name="identificador_codigo" maxlength="25" class="w-full p-2 border border-gray-300 rounded-md">
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="descripcion" class="block text-gray-700 font-medium mb-2">Descripción *</label>
+            <textarea id="descripcion" name="descripcion" rows="4" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Proporciona detalles sobre el perro, su comportamiento, condición física, etc." required></textarea>
+          </div>
+
+          <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition">
+            Enviar reporte
+          </button>
+      </form>
+      
+      <div class="mt-4 text-center">
+        <a href="{% url 'home' %}" class="text-indigo-600 hover:underline">Volver a la página principal</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de confirmación -->
+  <div class="modal fade fixed top-0 left-0 hidden w-full h-full outline-none overflow-x-hidden overflow-y-auto" id="confirmacionModal" tabindex="-1" aria-labelledby="confirmacionModalLabel" aria-hidden="true">
+    <div class="modal-dialog relative w-auto pointer-events-none">
+      <div class="modal-content border-none shadow-lg relative flex flex-col w-full pointer-events-auto bg-white bg-clip-padding rounded-md outline-none text-current">
+        <div class="modal-header flex flex-shrink-0 items-center justify-between p-4 border-b border-gray-200 rounded-t-md">
+          <h5 class="text-xl font-medium leading-normal text-gray-800" id="confirmacionModalLabel">Reporte enviado</h5>
+          <button type="button" class="btn-close box-content w-4 h-4 p-1 text-black border-none rounded-none opacity-50 focus:shadow-none focus:outline-none focus:opacity-100 hover:text-black hover:opacity-75 hover:no-underline" data-bs-dismiss="modal" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body relative p-4">
+          <p id="modal-message">¡Gracias por reportar este avistamiento! Tu ayuda es invaluable para reunir a las mascotas con sus familias.</p>
+        </div>
+        <div class="modal-footer flex flex-shrink-0 flex-wrap items-center justify-end p-4 border-t border-gray-200 rounded-b-md">
+          <button type="button" class="px-6 py-2.5 bg-indigo-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-indigo-700 hover:shadow-lg focus:bg-indigo-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-indigo-800 active:shadow-lg transition duration-150 ease-in-out" data-bs-dismiss="modal">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS y dependencias para el modal -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    function mostrarCampos() {
+      var identificador = document.getElementById("identificador").value;
+      var color_collar = document.getElementById("color_collar");
+      var chip_ruac = document.getElementById("chip_ruac");
+      
+      color_collar.style.display = "none";
+      chip_ruac.style.display = "none";
+      
+      if (identificador == "collar") {
+        color_collar.style.display = "block";
+      } else if (identificador == "chip" || identificador == "ruac") {
+        chip_ruac.style.display = "block";
+      }
+    }
+
+    // Manejo del envío del formulario
+    document.getElementById('avistamientoForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const form = this;
+        const formData = new FormData(form);
+        
+        // Validación adicional del frontend
+        if (!form.checkValidity()) {
+            alert("Por favor completa todos los campos requeridos marcados con *");
+            return;
+        }
+        
+        // Mostrar spinner
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        submitBtn.disabled = true;
+        
+        // Enviar datos al servidor
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                if(data.message) {
+                    document.getElementById('modal-message').textContent = data.message;
+                }
+                const modal = new bootstrap.Modal(document.getElementById('confirmacionModal'));
+                modal.show();
+                
+                document.getElementById('confirmacionModal').addEventListener('hidden.bs.modal', function() {
+                  window.location.href = "{% url 'home' %}";
+                });
+            } else {
+                throw new Error(data.error || 'Error en el servidor');
+            }
+        })
+        .catch(error => {
+            console.error('Error al enviar el formulario:', error);
+            alert('Error al enviar el formulario: ' + error.message);
+        })
+        .finally(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+  </script>
+</body>
+</html>
